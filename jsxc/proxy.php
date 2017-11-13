@@ -27,8 +27,12 @@ compressThis();
 // Not allowed?
 if(!BOSHProxy()) {
 	header('Status: 403 Forbidden', true, 403);
+
+	deb("no Bosh Proxy"); //remove this
 	exit('HTTP/1.1 403 Forbidden');
 }
+
+//deb("Header: ".print_r(apache_request_headers(), true));
 
 // custom BOSH host
 $HOST_BOSH = HOST_BOSH;
@@ -37,6 +41,7 @@ if(isset($_GET['host_bosh']) && $_GET['host_bosh']) {
 	if (substr($host_bosh, 0, 7)==="http://" || substr($host_bosh, 0, 8)==="https://") {
 		$HOST_BOSH = $host_bosh;
 	}
+//	deb('Host Bosh = '.print_r($host_bosh, true)); //remove this
 }
 
 // OPTIONS method?
@@ -46,19 +51,23 @@ if($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 	header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 	header('Access-Control-Allow-Headers: Content-Type');
 	header('Access-Control-Max-Age: 31536000');
-	
+
+	deb("Request_Method options was set"); //remove this
 	exit;
 }
 
 // Read POST content
 $data = file_get_contents('php://input');
 
+deb("[DATA] ".print_r($data, true)); //remove this
+
 // POST method?
 if($data) {
 	// CORS headers
 	header('Access-Control-Allow-Origin: *');
 	header('Access-Control-Allow-Headers: Content-Type');
-	
+
+//	deb("[Data] ".print_r($data, true)); // remove this;
 	$method = 'POST';
 }
 
@@ -66,12 +75,13 @@ if($data) {
 else if(isset($_GET['data']) && $_GET['data'] && isset($_GET['callback']) && $_GET['callback']) {
 	$method = 'GET';
 	$data = $_GET['data'];
+	deb("Callback is used"); // remove this
 	$callback = $_GET['callback'];
 }
 
 // Invalid method?
 else {
-	header('Status: 400 Bad Request', true, 400);
+	header('Status: 400 Bad Request', true, 400); deb("Invalid Method");//remove this
 	exit('HTTP/1.1 400 Bad Request');
 }
 
@@ -86,6 +96,8 @@ else
 
 // CURL caused problems for me
 $use_curl = false;
+
+//deb("Used Method: ".print_r($method, true)); //remove this
 
 // CURL stream functions
 if($use_curl) {
@@ -127,15 +139,18 @@ else {
 	$stream = @stream_context_create($parameters);
 	$connection = @fopen($HOST_BOSH, 'rb', false, $stream);
 
+//	deb("The stream: ".print_r($stream, true));
+
 	// Failed to connect!
 	if($connection == false) {
-		header('Status: 502 Proxy Error', true, 502);
+		header('Status: 502 Proxy Error', true, 502); deb("Connection failed - Proxy error"); // remove this
 		exit('HTTP/1.1 502 Proxy Error');
 	}
 
 	// Allow stream blocking to handle incoming BOSH data
 	@stream_set_blocking($connection, true);
 
+//	deb("The connection: ".print_r($connection, true)); // remove this
 	// Get the output content
 	$output = @stream_get_contents($connection);
 }
@@ -148,7 +163,9 @@ header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 if($method == 'POST') {
 	// XML header
 	header('Content-Type: text/xml; charset=utf-8');
-	
+
+	deb("[SENT]: ".print_r($output, true)); // remove this
+
 	if(!$output)
 		echo('<body xmlns=\'http://jabber.org/protocol/httpbind\' type=\'terminate\'/>');
 	else
@@ -162,12 +179,15 @@ if($method == 'GET') {
 	
 	// Encode output to JSON
 	$json_output = json_encode($output);
-	
+
+	deb('[RECV] '.print_r($callback, true).'({"reply":'.print_r($json_output, true).'});'); // remove this
+
 	if(($output == false) || ($output == '') || ($json_output == 'null'))
 		echo($callback.'({"reply":"<body xmlns=\'http:\/\/jabber.org\/protocol\/httpbind\' type=\'terminate\'\/>"});');
 	else
 		echo($callback.'({"reply":'.$json_output.'});');
 }
+
 
 // Close the connection
 if($use_curl)
@@ -175,4 +195,15 @@ if($use_curl)
 else
 	@fclose($connection);
 
+
+function deb($s) {
+//	require_once 'include/datetime.php';
+
+	$logfile = "jsxc.log";
+//	$date = datetime_convert('UTC', 'UTC', 'now', 'Y-m-d\TH:i:s\Z');
+	$date = $date = date('Y-m-d\TH:i:s\Z', time());
+
+	$content = $date." ".$s. "\n";
+	@file_put_contents($logfile, $content, FILE_APPEND);
+}
 ?>

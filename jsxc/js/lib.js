@@ -3,6 +3,7 @@
 //
 // This file is dual-licensed under the MIT license (see MIT.txt) and the AGPL license (see jappix/COPYING).
 //
+var settings;
 
 function jsxc_addon_xor(str1, str2) {
     if (str1.length != str2.length) throw "not same length";
@@ -21,7 +22,9 @@ function jsxc_addon_xor(str1, str2) {
 }
 
 function jsxc_addon_set_client_secret(password) {
-	if (!password) return;
+	if (!password) {
+		return;
+	}
 
 	var salt1 = "h8doCRekWto0njyQohKpdx6BN0UTyC6N";
 	var salt2 = "jdX8OwFC1kWAq3s9uOyAcE8g3UNNO5t3";
@@ -227,10 +230,10 @@ function jsxc_manage_roster(contacts, contacts_hash, autoapprove, autosubscribe)
 }
 
 function jsxc_addon_subscribe() {
-        if (!window.con) {
+	if (!window.con) {
 		alert("Not connected.");
 		return;
-        }
+	}
 
 	var xid = prompt("Jabber address");
 	sendSubscribe(xid, "subscribe");
@@ -281,17 +284,69 @@ function jsxc_addon_subscribe() {
 //}
 
 function jsxc_addon_start(server, username, proxy, bosh, encrypted, password, nickname, contacts, contacts_hash, autoapprove, autosubscribe, groupchats) {
+	// set HOST_BOSH
+	if (proxy) {
+		HOST_BOSH = proxy+"?host_bosh="+encodeURI(bosh);
+	} else {
+		HOST_BOSH = bosh;
+	}
+	url = HOST_BOSH;
+
+	settings = {
+		xmpp: {
+			url: HOST_BOSH,
+			domain: server,
+			resource: 'example',
+			jid: username + "@" + server,
+//			jid: 'rabuzarus',
+			password: password,
+			overwrite: false,
+		}
+	};
+
+
 	jsxc.init({
 		xmpp: {
-			url: '/http-bind/',
-			domain: 'localhost',
-			resource: 'example',
-			overwrite: true,
-			onlogin: true
+			url: HOST_BOSH,
+//			domain: server,
+//			resource: 'example',
+////			jid: 'rabuzarus@jabber.systemli.org',
+////			jid: 'rabuzarus',
+//			password: 'sghak871',
+//			overwrite: false,
 		},
+		logoutElement: $('#nav-logout-link'),
 		root: '/addon/jsxc/jsxc/',
-//		displayRosterMinimized: function() {
-//			return true;
+		displayRosterMinimized: function() {
+			return true;
+		},
+		loadSettings: loadSettings
+	});
+
+//	jsxc.start(username, 'schnauzi');
+	var testvar = 'test';
+
+	if (jsxc.currentState === jsxc.CONST.STATE.SUSPEND) {
+		jsxc.start(username + '@' + server, 'sghak871');
+	}
+
+//	$(document).on('stateChange.jsxc', function _handler(event, state) {
+//		if (jsxc.currentState === jsxc.CONST.STATE.SUSPEND) {
+//			jsxc.start(username + '@' + server, 'sghak871');
+//		} else if (state === jsxc.CONST.STATE.READY) {
+//			// if JSXC is ready this means we successfully connected and thus don't have to listen to the suspend state
+//			$(document).off('stateChange.jsxc', _handler);
 //		}
+//	});
+
+	$(document).on('stateChange.jsxc', function(event, state) {
+		if (jsxc.currentState === jsxc.CONST.STATE.SUSPEND) {
+//			jsxc.start(username + '@' + server, 'sghak871');
+		}
 	});
 }
+
+ function loadSettings(username, password, cb) {
+	console.log("settings loaded: " + settings);
+	cb(settings);
+ }

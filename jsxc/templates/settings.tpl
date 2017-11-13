@@ -9,7 +9,7 @@
 	</span>
 
 	<label for="jsxc-activate">{{$activate_label}}</label>
-	<input id="jsxc-activate" type="checkbox" name="jsxc-activate" value="1"{{$activated}} />
+	<input id="jsxc-activate" type="checkbox" name="jsxc-activate" value="1" {{$activated}} />
 	<br />
 
 	<label for="jsxc-dont-insertchat">{{$no_insert_label}}</label>
@@ -26,7 +26,7 @@
 
 	{{if $defaultbosh}}
 		<label for="jsxc-bosh">{{$bosh_label}}</label>
-		 <input id="jsxc-bosh" type="text" name="jsxc-bosh" value="{{$bosh}}" />
+		<input id="jsxc-bosh" type="text" name="jsxc-bosh" value="{{$bosh}}" />
 		<br />
 	{{/if}}
 

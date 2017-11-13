@@ -70,7 +70,7 @@ function jsxc_install() {
 	register_hook('plugin_settings_post', 'addon/jsxc/jsxc.php', 'jsxc_settings_post');
 
 	register_hook('page_end', 'addon/jsxc/jsxc.php', 'jsxc_script');
-	register_hook('authenticate', 'addon/jsxc/jsxc.php', 'jsxc_login');
+	register_hook('login_hook', 'addon/jsxc/jsxc.php', 'jsxc_login');
 
 	register_hook('cron', 'addon/jsxc/jsxc.php', 'jsxc_cron');
 
@@ -106,7 +106,7 @@ function jsxc_uninstall() {
 	unregister_hook('plugin_settings_post', 'addon/jsxc/jsxc.php', 'jsxc_settings_post');
 
 	unregister_hook('page_end', 'addon/jsxc/jsxc.php', 'jsxc_script');
-	unregister_hook('authenticate', 'addon/jsxc/jsxc.php', 'jsxc_login');
+	unregister_hook('login_hook', 'addon/jsxc/jsxc.php', 'jsxc_login');
 
 	unregister_hook('cron', 'addon/jsxc/jsxc.php', 'jsxc_cron');
 
@@ -296,6 +296,7 @@ function jsxc_settings(&$a, &$s) {
 //
 //		$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jappixmini/lib.js"></script>'."\r\n";
 
+		$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jquery-ui.min.js"></script>'."\r\n";
 		$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jquery.fullscreen.js"></script>'."\r\n";
 		$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jquery.slimscroll.js"></script>'."\r\n";
 		$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jsxc.dep.js"></script>'."\r\n";
@@ -414,7 +415,9 @@ function jsxc_script(&$a, &$s) {
 	$a->page['htmlhead'] .= '<link href="' . $a->get_baseurl() . '/addon/jsxc/jsxc/css/jquery-ui.min.css" media="all" rel="stylesheet" type="text/css" />'."\r\n";
 	$a->page['htmlhead'] .= '<link href="' . $a->get_baseurl() . '/addon/jsxc/jsxc/css/magnific-popup.css" media="all" rel="stylesheet" type="text/css" />'."\r\n";
 	$a->page['htmlhead'] .= '<link href="' . $a->get_baseurl() . '/addon/jsxc/jsxc/css/jsxc.css" media="all" rel="stylesheet" type="text/css" />'."\r\n";
-	
+	$a->page['htmlhead'] .= '<link href="' . $a->get_baseurl() . '/addon/jsxc//css/fjsxc.css" media="all" rel="stylesheet" type="text/css" />'."\r\n";
+
+	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jquery-ui.min.js"></script>'."\r\n";
 	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jquery.fullscreen.js"></script>'."\r\n";
 	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jquery.slimscroll.js"></script>'."\r\n";
 	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/jsxc/lib/jsxc.dep.js"></script>'."\r\n";
@@ -500,8 +503,8 @@ function jsxc_login(&$a, &$o) {
 	// Create client secret on login to be able to encrypt jabber passwords.
 
 	// For setDB and str_sha1, needed by jsxc_addon_set_client_secret.
-	//$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jappixmini/jappix/php/get.php?t=js&amp;f=datastore.js~jsjac.js"></script>'."\r\n";
-
+	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/js/datastore.js"></script>'."\r\n";
+	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/js/lib.js"></script>'."\r\n";
 	// For jsxc_addon_set_client_secret.
 	$a->page['htmlhead'] .= '<script type="text/javascript" src="' . $a->get_baseurl() . '/addon/jsxc/lib.js"></script>'."\r\n";
 

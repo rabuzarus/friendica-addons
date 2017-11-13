@@ -14,12 +14,12 @@
 
 /*      Configuration                                           */
 
-$log['file']=false;                     #use file path (ie /tmp/bosh_proxy.log) if you want a log file
+$log['file']= 'proxy.log';                     #use file path (ie /tmp/bosh_proxy.log) if you want a log file
 $log['level']=0;                        #this does nothing at the moment
-$xmpp['server']="127.0.0.1";            #name or IP
-$xmpp['port']=5280;
-$xmpp['path']="httpbinding/";           #do not add the starting /
-$xmpp['ssl']=false;                     #true=https, false=http
+$xmpp['server']="systemli.org";            #name or IP
+$xmpp['port']=5222;
+$xmpp['path']="jabber/bosh";           #do not add the starting /
+$xmpp['ssl']=true;                     #true=https, false=http
 
 
 /*      Start of the proxy                                      */

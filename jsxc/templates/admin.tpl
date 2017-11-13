@@ -9,7 +9,7 @@
 
 {{* bosh address *}}
 <p><label for="jsxc-address">Adress of the default BOSH proxy. If enabled it overrides the user settings:</label><br />
-<input id="jsxc-address" type="text" name="jsxc-address" value=" {{$bosh_address}}" /></p>
+<input id="jsxc-address" type="text" name="jsxc-address" value="{{$bosh_address}}" /></p>
 
 {{* default server address *}}
 <p><label for="jsxc-server">Adress of the default jabber server:</label><br />
