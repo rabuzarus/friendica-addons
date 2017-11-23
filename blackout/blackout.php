@@ -49,7 +49,6 @@
  * THE SOFTWARE.
  */
 
-use Friendica\Core\Config;
 
 function blackout_install() {
     register_hook('page_header', 'addon/blackout/blackout.php', 'blackout_redirect');
@@ -68,9 +67,9 @@ function blackout_redirect ($a, $b) {
 		return true;
 
     // else...
-    $mystart = Config::get('blackout','begindate');
-    $myend   = Config::get('blackout','enddate');
-    $myurl   = Config::get('blackout','url');
+    $mystart = get_config('blackout','begindate');
+    $myend   = get_config('blackout','enddate');
+    $myurl   = get_config('blackout','url');
     $now = time();
     $date1 = DateTime::createFromFormat('Y-m-d G:i', $mystart);
     $date2 = DateTime::createFromFormat('Y-m-d G:i', $myend);
@@ -88,11 +87,11 @@ function blackout_redirect ($a, $b) {
 }
 
 function blackout_plugin_admin(&$a, &$o) {
-    $mystart = Config::get('blackout','begindate');
+    $mystart = get_config('blackout','begindate');
     if (! is_string($mystart)) { $mystart = "YYYY-MM-DD:hhmm"; }
-    $myend   = Config::get('blackout','enddate');
+    $myend   = get_config('blackout','enddate');
     if (! is_string($myend)) { $myend = "YYYY-MM-DD:hhmm"; }
-    $myurl   = Config::get('blackout','url');
+    $myurl   = get_config('blackout','url');
     if (! is_string($myurl)) { $myurl = "http://www.example.com"; }
     $t = get_markup_template( "admin.tpl", "addon/blackout/" );
  
@@ -115,7 +114,7 @@ function blackout_plugin_admin_post (&$a) {
     $begindate = trim($_POST['startdate']);
     $enddate = trim($_POST['enddate']);
     $url = trim($_POST['rurl']);
-    Config::set('blackout','begindate',$begindate);
-    Config::set('blackout','enddate',$enddate);
-    Config::set('blackout','url',$url);
+    set_config('blackout','begindate',$begindate);
+    set_config('blackout','enddate',$enddate);
+    set_config('blackout','url',$url);
 }

@@ -9,8 +9,6 @@
  * 
  */
 
-use Friendica\Core\PConfig;
-
 function nsfw_install() {
 	register_hook('prepare_body', 'addon/nsfw/nsfw.php', 'nsfw_prepare_body', 10);
 	register_hook('plugin_settings', 'addon/nsfw/nsfw.php', 'nsfw_addon_settings');
@@ -71,8 +69,8 @@ function nsfw_addon_settings(&$a,&$s) {
 
     $a->page['htmlhead'] .= '<link rel="stylesheet"  type="text/css" href="' . $a->get_baseurl() . '/addon/nsfw/nsfw.css' . '" media="all" />' . "\r\n";
 
-	$enable_checked = (intval(PConfig::get(local_user(),'nsfw','disable')) ? '' : ' checked="checked" ');
-	$words = PConfig::get(local_user(),'nsfw','words');
+	$enable_checked = (intval(get_pconfig(local_user(),'nsfw','disable')) ? '' : ' checked="checked" ');
+	$words = get_pconfig(local_user(),'nsfw','words');
 	if(! $words)
 		$words = 'nsfw,';
 
@@ -106,10 +104,10 @@ function nsfw_addon_settings_post(&$a,&$b) {
 		return;
 
 	if($_POST['nsfw-submit']) {
-		PConfig::set(local_user(),'nsfw','words',trim($_POST['nsfw-words']));
+		set_pconfig(local_user(),'nsfw','words',trim($_POST['nsfw-words']));
 		$enable = ((x($_POST,'nsfw-enable')) ? intval($_POST['nsfw-enable']) : 0);
 		$disable = 1-$enable;
-		PConfig::set(local_user(),'nsfw','disable', $disable);
+		set_pconfig(local_user(),'nsfw','disable', $disable);
 		info( t('NSFW Settings saved.') . EOL);
 	}
 }
@@ -118,11 +116,11 @@ function nsfw_prepare_body(&$a,&$b) {
 
 
 	$words = null;
-	if(PConfig::get(local_user(),'nsfw','disable'))
+	if(get_pconfig(local_user(),'nsfw','disable'))
 		return;
 
 	if(local_user()) {
-		$words = PConfig::get(local_user(),'nsfw','words');
+		$words = get_pconfig(local_user(),'nsfw','words');
 	}
 	if($words) {
 		$arr = explode(',',$words);

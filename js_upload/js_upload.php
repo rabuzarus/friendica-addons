@@ -16,8 +16,6 @@
  *
  */
 
-use Friendica\Core\Config;
-
 
 function js_upload_install() {
 	register_hook('photo_upload_form', 'addon/js_upload/js_upload.php', 'js_upload_form');
@@ -47,7 +45,7 @@ function js_upload_form(&$a,&$b) {
 	$cancel = t('Cancel');
 	$failed = t('Failed');
 
-	$maximagesize = intval(Config::get('system','maximagesize'));
+	$maximagesize = intval(get_config('system','maximagesize'));
 
 	$b['addon_text'] .= <<< EOT
 	
@@ -143,7 +141,7 @@ function js_upload_post_init(&$a,&$b) {
 
 	// max file size in bytes
 
-	$sizeLimit = Config::get('system','maximagesize'); //6 * 1024 * 1024;
+	$sizeLimit = get_config('system','maximagesize'); //6 * 1024 * 1024;
 
 	$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
 
@@ -199,7 +197,7 @@ class qqUploadedFileXhr {
     function save() {    
         $input = fopen("php://input", "r");
 
-		$upload_dir = Config::get('system','tempdir');
+		$upload_dir = get_config('system','tempdir');
 		if(! $upload_dir)
 			$upload_dir = sys_get_temp_dir();
 
@@ -317,7 +315,7 @@ class qqFileUploader {
 //        }
         
 
-		$maximagesize = Config::get('system','maximagesize');
+		$maximagesize = get_config('system','maximagesize');
 
 		if(($maximagesize) && ($size > $maximagesize)) {
 			return array('error' => t('Image exceeds size limit of ') . $maximagesize );

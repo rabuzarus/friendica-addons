@@ -10,7 +10,6 @@
  *"My body was my sacrifice... for my magic. This damage is permanent." - Raistlin Majere
  */
 
-use Friendica\Core\PConfig;
 
 function krynn_install() {
 
@@ -82,7 +81,7 @@ function krynn_post_hook($a, &$item) {
 
 	/* Retrieve our personal config setting */
 
-	$active = PConfig::get(local_user(), 'krynn', 'enable');
+	$active = get_pconfig(local_user(), 'krynn', 'enable');
 
 	if(! $active)
 		return;
@@ -120,7 +119,7 @@ function krynn_settings_post($a,$post) {
 	if(! local_user())
 		return;
 	if($_POST['krynn-submit'])
-		PConfig::set(local_user(),'krynn','enable',intval($_POST['krynn']));
+		set_pconfig(local_user(),'krynn','enable',intval($_POST['krynn']));
 }
 
 
@@ -144,7 +143,7 @@ function krynn_settings(&$a,&$s) {
 
 	/* Get the current state of our config variable */
 
-	$enabled = PConfig::get(local_user(),'krynn','enable');
+	$enabled = get_pconfig(local_user(),'krynn','enable');
 
 	$checked = (($enabled) ? ' checked="checked" ' : '');
 

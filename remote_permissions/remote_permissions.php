@@ -7,8 +7,6 @@
  * 
  */
 
-use Friendica\Core\Config;
-use Friendica\Core\PConfig;
 
 function remote_permissions_install() {
 	register_hook('lockview_content', 'addon/remote_permissions/remote_permissions.php', 'remote_permissions_content');
@@ -27,7 +25,7 @@ function remote_permissions_settings(&$a,&$o) {
 	if(! local_user())
 		return;
 
-	$global = Config::get("remote_perms", "global");
+	$global = get_config("remote_perms", "global");
 	if($global == 1)
 		return;
 
@@ -37,7 +35,7 @@ function remote_permissions_settings(&$a,&$o) {
 
 	/* Get the current state of our config variable */
 
-	$remote_perms = PConfig::get(local_user(),'remote_perms','show');
+	$remote_perms = get_pconfig(local_user(),'remote_perms','show');
 	
 	/* Add some HTML to the existing form */
 
@@ -56,7 +54,7 @@ function remote_permissions_settings_post($a,$post) {
 	if(! local_user() || (! x($_POST,'remote-perms-submit')))
 		return;
 
-	PConfig::set(local_user(),'remote_perms','show',intval($_POST['remote-perms']));
+	set_pconfig(local_user(),'remote_perms','show',intval($_POST['remote-perms']));
 	info( t('Remote Permissions settings updated.') . EOL);
 }
 
@@ -65,7 +63,7 @@ function remote_permissions_content($a, $item_copy) {
 	if($item_copy['uid'] != local_user())
 		return;
 
-	if(Config::get('remote_perms','global') == 0) {
+	if(get_config('remote_perms','global') == 0) {
 		// Admin has set Individual choice. We need to find
 		// the original poster. First, get the contact's info
 		$r = q("SELECT nick, url FROM contact WHERE id = %d LIMIT 1",
@@ -88,7 +86,7 @@ function remote_permissions_content($a, $item_copy) {
 		if(! $r)
 			return;
 
-		if(PConfig::get($r[0]['uid'],'remote_perms','show') == 0)
+		if(get_pconfig($r[0]['uid'],'remote_perms','show') == 0)
 			return;
 	}
 
@@ -196,14 +194,14 @@ function remote_permissions_plugin_admin(&$a, &$o){
 	$t = get_markup_template( "admin.tpl", "addon/remote_permissions/" );
 	$o = replace_macros($t, array(
 		'$submit' => t('Save Settings'),
-		'$global' => array('remotepermschoice', t('Global'), 1, t('The posts of every user on this server show the post recipients'),  Config::get('remote_perms', 'global') == 1),
-		'$individual' => array('remotepermschoice', t('Individual'), 2, t('Each user chooses whether his/her posts show the post recipients'),  Config::get('remote_perms', 'global') == 0)
+		'$global' => array('remotepermschoice', t('Global'), 1, t('The posts of every user on this server show the post recipients'),  get_config('remote_perms', 'global') == 1),
+		'$individual' => array('remotepermschoice', t('Individual'), 2, t('Each user chooses whether his/her posts show the post recipients'),  get_config('remote_perms', 'global') == 0)
 	));
 }
 
 function remote_permissions_plugin_admin_post(&$a){
 	$choice	=	((x($_POST,'remotepermschoice'))		? notags(trim($_POST['remotepermschoice']))	: '');
-	Config::set('remote_perms','global',($choice == 1 ? 1 : 0));
+	set_config('remote_perms','global',($choice == 1 ? 1 : 0));
 	info( t('Settings updated.'). EOL );
 }
 

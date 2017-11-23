@@ -7,7 +7,6 @@
  * Author: Tony Baldwin <https://free-haven.org/profile/tony>
  */
 
-use Friendica\Core\PConfig;
 
 function planets_install() {
 
@@ -79,7 +78,7 @@ function planets_post_hook($a, &$item) {
 
 	/* Retrieve our personal config setting */
 
-	$active = PConfig::get(local_user(), 'planets', 'enable');
+	$active = get_pconfig(local_user(), 'planets', 'enable');
 
 	if(! $active)
 		return;
@@ -117,7 +116,7 @@ function planets_settings_post($a,$post) {
 	if(! local_user())
 		return;
 	if($_POST['planets-submit'])
-		PConfig::set(local_user(),'planets','enable',intval($_POST['planets']));
+		set_pconfig(local_user(),'planets','enable',intval($_POST['planets']));
 }
 
 
@@ -141,7 +140,7 @@ function planets_settings(&$a,&$s) {
 
 	/* Get the current state of our config variable */
 
-	$enabled = PConfig::get(local_user(),'planets','enable');
+	$enabled = get_pconfig(local_user(),'planets','enable');
 
 	$checked = (($enabled) ? ' checked="checked" ' : '');
 

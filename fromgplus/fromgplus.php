@@ -9,9 +9,6 @@
 
 define('FROMGPLUS_DEFAULT_POLL_INTERVAL', 30); // given in minutes
 
-use Friendica\Core\Config;
-use Friendica\Core\PConfig;
-
 require_once('mod/share.php');
 require_once('mod/parse_url.php');
 require_once('include/text.php');
@@ -42,9 +39,9 @@ function fromgplus_addon_settings(&$a,&$s) {
 	if (count($result) > 0)
 		return;
 
-	$enable_checked = (intval(PConfig::get(local_user(),'fromgplus','enable')) ? ' checked="checked"' : '');
-	$keywords_checked = (intval(PConfig::get(local_user(), 'fromgplus', 'keywords')) ? ' checked="checked"' : '');
-	$account = PConfig::get(local_user(),'fromgplus','account');
+	$enable_checked = (intval(get_pconfig(local_user(),'fromgplus','enable')) ? ' checked="checked"' : '');
+	$keywords_checked = (intval(get_pconfig(local_user(), 'fromgplus', 'keywords')) ? ' checked="checked"' : '');
+	$account = get_pconfig(local_user(),'fromgplus','account');
 
 	$s .= '<span id="settings_fromgplus_inflated" class="settings-block fakelink" style="display: block;" onclick="openClose(\'settings_fromgplus_expanded\'); openClose(\'settings_fromgplus_inflated\');">';
 	$s .= '<img class="connector" src="images/googleplus.png" /><h3 class="connector">'. t('Google+ Mirror').'</h3>';
@@ -79,14 +76,14 @@ function fromgplus_addon_settings_post(&$a,&$b) {
 		return;
 
 	if($_POST['fromgplus-submit']) {
-		PConfig::set(local_user(),'fromgplus','account',trim($_POST['fromgplus-account']));
+		set_pconfig(local_user(),'fromgplus','account',trim($_POST['fromgplus-account']));
 		$enable = ((x($_POST,'fromgplus-enable')) ? intval($_POST['fromgplus-enable']) : 0);
-		PConfig::set(local_user(),'fromgplus','enable', $enable);
+		set_pconfig(local_user(),'fromgplus','enable', $enable);
 		$keywords = ((x($_POST, 'fromgplus-keywords')) ? intval($_POST['fromgplus-keywords']) : 0);
-		PConfig::set(local_user(),'fromgplus', 'keywords', $keywords);
+		set_pconfig(local_user(),'fromgplus', 'keywords', $keywords);
 
 		if (!$enable)
-			PConfig::delete(local_user(),'fromgplus','lastdate');
+			del_pconfig(local_user(),'fromgplus','lastdate');
 
 		info( t('Google+ Import Settings saved.') . EOL);
 	}
@@ -97,20 +94,20 @@ function fromgplus_plugin_admin(&$a, &$o){
 
         $o = replace_macros($t, array(
                 '$submit' => t('Save Settings'),
-                '$key' => array('key', t('Key'), trim(Config::get('fromgplus', 'key')), t('')),
+                '$key' => array('key', t('Key'), trim(get_config('fromgplus', 'key')), t('')),
         ));
 }
 
 function fromgplus_plugin_admin_post(&$a){
         $key = ((x($_POST,'key')) ? trim($_POST['key']) : '');
-        Config::set('fromgplus','key',$key);
+        set_config('fromgplus','key',$key);
         info( t('Settings updated.'). EOL );
 }
 
 function fromgplus_cron($a,$b) {
-	$last = Config::get('fromgplus','last_poll');
+	$last = get_config('fromgplus','last_poll');
 
-        $poll_interval = intval(Config::get('fromgplus','poll_interval'));
+        $poll_interval = intval(get_config('fromgplus','poll_interval'));
         if(! $poll_interval)
                 $poll_interval = FROMGPLUS_DEFAULT_POLL_INTERVAL;
 
@@ -127,7 +124,7 @@ function fromgplus_cron($a,$b) {
         $r = q("SELECT * FROM `pconfig` WHERE `cat` = 'fromgplus' AND `k` = 'enable' AND `v` = '1' ORDER BY RAND() ");
         if(count($r)) {
                 foreach($r as $rr) {
-			$account = PConfig::get($rr['uid'],'fromgplus','account');
+			$account = get_pconfig($rr['uid'],'fromgplus','account');
 			if ($account) {
 		        logger('fromgplus: fetching for user '.$rr['uid']);
 				fromgplus_fetch($a, $rr['uid']);
@@ -137,7 +134,7 @@ function fromgplus_cron($a,$b) {
 
         logger('fromgplus: cron_end');
 
-	Config::set('fromgplus','last_poll', time());
+	set_config('fromgplus','last_poll', time());
 }
 
 function fromgplus_post($a, $uid, $source, $body, $location, $coord, $id) {
@@ -341,7 +338,7 @@ function fromgplus_handleattachments($a, $uid, $item, $displaytext, $shared) {
 
 				// Add Keywords to page link
 				$data = parseurl_getsiteinfo_cached($pagedata["url"], true);
-				if (isset($data["keywords"]) && PConfig::get($uid, 'fromgplus', 'keywords')) {
+				if (isset($data["keywords"]) && get_pconfig($uid, 'fromgplus', 'keywords')) {
 					$pagedata["keywords"] = $data["keywords"];
 				}
 				break;
@@ -432,8 +429,8 @@ function fromgplus_fetch($a, $uid) {
 	// Special blank to identify postings from the googleplus connector
 	$blank = html_entity_decode("&#x00A0;", ENT_QUOTES, 'UTF-8');
 
-	$account = PConfig::get($uid,'fromgplus','account');
-	$key = Config::get('fromgplus','key');
+	$account = get_pconfig($uid,'fromgplus','account');
+	$key = get_config('fromgplus','key');
 
 	$result = fetch_url("https://www.googleapis.com/plus/v1/people/".$account."/activities/public?alt=json&pp=1&key=".$key."&maxResults=".$maxfetch);
 	//$result = file_get_contents("google.txt");
@@ -441,7 +438,7 @@ function fromgplus_fetch($a, $uid) {
 
 	$activities = json_decode($result);
 
-	$initiallastdate = PConfig::get($uid,'fromgplus','lastdate');
+	$initiallastdate = get_pconfig($uid,'fromgplus','lastdate');
 
 	$first_time = ($initiallastdate == "");
 
@@ -466,7 +463,7 @@ function fromgplus_fetch($a, $uid) {
 		if ($lastdate < strtotime($item->published))
 			$lastdate = strtotime($item->published);
 
-		PConfig::set($uid,'fromgplus','lastdate', $lastdate);
+		set_pconfig($uid,'fromgplus','lastdate', $lastdate);
 
 		if ($first_time)
 			continue;
@@ -508,7 +505,7 @@ function fromgplus_fetch($a, $uid) {
 				case "activity":
 					$post = fromgplus_html2bbcode($item->annotation)."\n";
 
-					if (!intval(Config::get('system','old_share'))) {
+					if (!intval(get_config('system','old_share'))) {
 
 						if (function_exists("share_header"))
 							$post .= share_header($item->object->actor->displayName, $item->object->actor->url,
@@ -558,5 +555,5 @@ function fromgplus_fetch($a, $uid) {
 		}
 	}
 	if ($lastdate != 0)
-		PConfig::set($uid,'fromgplus','lastdate', $lastdate);
+		set_pconfig($uid,'fromgplus','lastdate', $lastdate);
 }

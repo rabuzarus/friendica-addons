@@ -25,7 +25,6 @@
  *        count only unseen elements which are not type=activity (likes and dislikes not seen as new elements)
  */
 
-use Friendica\Core\PConfig;
 
 function windowsphonepush_install() {
 
@@ -88,13 +87,13 @@ function windowsphonepush_settings_post($a,$post) {
 	if(! local_user() || (! x($_POST,'windowsphonepush-submit')))
 		return;
 	$enable = intval($_POST['windowsphonepush']);
-	PConfig::set(local_user(),'windowsphonepush','enable',$enable);
+	set_pconfig(local_user(),'windowsphonepush','enable',$enable);
 
 	if($enable) {
-		PConfig::set(local_user(),'windowsphonepush','counterunseen', 0);
+		set_pconfig(local_user(),'windowsphonepush','counterunseen', 0);
 	}
 
-	PConfig::set(local_user(),'windowsphonepush','senditemtext',intval($_POST['windowsphonepush-senditemtext']));
+	set_pconfig(local_user(),'windowsphonepush','senditemtext',intval($_POST['windowsphonepush-senditemtext']));
 
 	info( t('WindowsPhonePush settings updated.') . EOL);
 }
@@ -115,13 +114,13 @@ function windowsphonepush_settings(&$a,&$s) {
 	$a->page['htmlhead'] .= '<link rel="stylesheet"  type="text/css" href="' . $a->get_baseurl() . '/addon/windowsphonepush/windowsphonepush.css' . '" media="all" />' . "\r\n";
 
 	/* Get the current state of our config variables */
-	$enabled = PConfig::get(local_user(),'windowsphonepush','enable');
+	$enabled = get_pconfig(local_user(),'windowsphonepush','enable');
 	$checked_enabled = (($enabled) ? ' checked="checked" ' : '');
 
-	$senditemtext = PConfig::get(local_user(), 'windowsphonepush', 'senditemtext');
+	$senditemtext = get_pconfig(local_user(), 'windowsphonepush', 'senditemtext');
 	$checked_senditemtext = (($senditemtext) ? ' checked="checked" ' : '');
 
-	$device_url = PConfig::get(local_user(), 'windowsphonepush', 'device_url');
+	$device_url = get_pconfig(local_user(), 'windowsphonepush', 'device_url');
 
 	/* Add some HTML to the existing form */
 	$s .= '<div class="settings-block">';
@@ -164,8 +163,8 @@ function windowsphonepush_cron() {
 	if(count($r)) {
 		foreach($r as $rr) {
 			// load stored information for the user-id of the current loop
-			$device_url = PConfig::get($rr['uid'], 'windowsphonepush', 'device_url');
-			$lastpushid = PConfig::get($rr['uid'], 'windowsphonepush', 'lastpushid');
+			$device_url = get_pconfig($rr['uid'], 'windowsphonepush', 'device_url');
+			$lastpushid = get_pconfig($rr['uid'], 'windowsphonepush', 'lastpushid');
 
 			// pushing only possible if device_url (the URI on Microsoft server) is available or not "NA" (which will be sent 
 			// by app if user has switched the server setting in app - sending blank not possible as this would return an update error)
@@ -186,7 +185,7 @@ function windowsphonepush_cron() {
 				switch (trim($res_tile)) {
 					case "Received":
 						// ok, count has been pushed, let's save it in personal settings 
-						PConfig::set($rr['uid'], 'windowsphonepush', 'counterunseen', $count[0]['count']);
+						set_pconfig($rr['uid'], 'windowsphonepush', 'counterunseen', $count[0]['count']);
 						break;
 					case "QueueFull":
 						// maximum of 30 messages reached, server rejects any further push notification until device reconnects
@@ -209,7 +208,7 @@ function windowsphonepush_cron() {
 				if (intval($count[0]['max']) > intval($lastpushid)) {
 					// user can define if he wants to see the text of the item in the push notification
 					// this has been implemented as the device_url is not a https uri (not so secure)
-					$senditemtext = PConfig::get($rr['uid'], 'windowsphonepush', 'senditemtext');
+					$senditemtext = get_pconfig($rr['uid'], 'windowsphonepush', 'senditemtext');
 					if ($senditemtext == 1) {
 						// load item with the max id
 						$item = q("SELECT `author-name` as author, `body` as body FROM `item` where `id` = %d",
@@ -248,7 +247,7 @@ function windowsphonepush_cron() {
 					// further log information done on count pushing with send_tile (see above)
 					$res_toast = send_toast($device_url, $author, $body);
 					if (trim($res_toast) === 'Received') {
-						PConfig::set($rr['uid'], 'windowsphonepush', 'lastpushid', $count[0]['max']);
+						set_pconfig($rr['uid'], 'windowsphonepush', 'lastpushid', $count[0]['max']);
 					}				
 				}
 			}
@@ -331,7 +330,7 @@ function send_push($device_url, $headers, $msg) {
 	// and log this fact
 	$subscriptionStatus = get_header_value($output, 'X-SubscriptionStatus');
 	if ($subscriptionStatus == "Expired") {
-		PConfig::set(local_user(),'windowsphonepush','device_url', "");
+		set_pconfig(local_user(),'windowsphonepush','device_url', "");
 		logger("ERROR: the stored Device-URL " . $device_url . "returned an 'Expired' error, it has been deleted now.");
 	}
 
@@ -394,11 +393,11 @@ function windowsphonepush_showsettings(&$a) {
 	if(! local_user())
 		return;
 
-	$enable = PConfig::get(local_user(), 'windowsphonepush', 'enable');
-	$device_url = PConfig::get(local_user(), 'windowsphonepush', 'device_url');
-	$senditemtext = PConfig::get(local_user(), 'windowsphonepush', 'senditemtext');
-	$lastpushid = PConfig::get(local_user(), 'windowsphonepush', 'lastpushid');
-	$counterunseen = PConfig::get(local_user(), 'windowsphonepush', 'counterunseen');
+	$enable = get_pconfig(local_user(), 'windowsphonepush', 'enable');
+	$device_url = get_pconfig(local_user(), 'windowsphonepush', 'device_url');
+	$senditemtext = get_pconfig(local_user(), 'windowsphonepush', 'senditemtext');
+	$lastpushid = get_pconfig(local_user(), 'windowsphonepush', 'lastpushid');
+	$counterunseen = get_pconfig(local_user(), 'windowsphonepush', 'counterunseen');
 	$addonversion = "2.0";
 
 	if (!$device_url)
@@ -427,7 +426,7 @@ function windowsphonepush_updatesettings(&$a) {
 	}
 
 	// no updating if user hasn't enabled the plugin
-	$enable = PConfig::get(local_user(), 'windowsphonepush', 'enable');
+	$enable = get_pconfig(local_user(), 'windowsphonepush', 'enable');
 	if(! $enable) {
 		return "Plug-in not enabled";
 	}
@@ -449,12 +448,12 @@ function windowsphonepush_updatesettings(&$a) {
 						`v` = '" . $device_url . "'");
 	if(count($r)) {
 		foreach($r as $rr) {
-		PConfig::set($rr['uid'], 'windowsphonepush', 'device_url', '');
+		set_pconfig($rr['uid'], 'windowsphonepush', 'device_url', '');
 		logger("WARN: the sent URL was already registered with user '" . $rr['uid'] . "'. Deleted for this user as we expect to be correct now for user '" . local_user() . "'.");
 		}
 	}
 
-	PConfig::set(local_user(),'windowsphonepush','device_url', $device_url);
+	set_pconfig(local_user(),'windowsphonepush','device_url', $device_url);
 	// output the successfull update of the device URL to the logger for error analysis if necessary
 	logger("INFO: Device-URL for user '" . local_user() . "' has been updated with '" . $device_url . "'");
 	return "Device-URL updated successfully!";
@@ -469,12 +468,12 @@ function windowsphonepush_updatecounterunseen() {
 	}
 
 	// no updating if user hasn't enabled the plugin
-	$enable = PConfig::get(local_user(), 'windowsphonepush', 'enable');
+	$enable = get_pconfig(local_user(), 'windowsphonepush', 'enable');
 	if(! $enable) {
 		return "Plug-in not enabled";
 	}
 
-	PConfig::set(local_user(),'windowsphonepush','counterunseen', 0);
+	set_pconfig(local_user(),'windowsphonepush','counterunseen', 0);
 	return "Counter set to zero";
 }
 

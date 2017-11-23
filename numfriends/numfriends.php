@@ -8,7 +8,6 @@
  *
  */
 
-use Friendica\Core\PConfig;
 
 function numfriends_install() {
 
@@ -43,7 +42,7 @@ function numfriends_settings_post($a,$post) {
 	if(! local_user() || (! x($_POST,'numfriends-submit')))
 		return;
 
-	PConfig::set(local_user(),'system','display_friend_count',intval($_POST['numfriends']));
+	set_pconfig(local_user(),'system','display_friend_count',intval($_POST['numfriends']));
 	info( t('Numfriends settings updated.') . EOL);
 }
 
@@ -68,7 +67,7 @@ function numfriends_settings(&$a,&$s) {
 
 	/* Get the current state of our config variable */
 
-	$numfriends = PConfig::get(local_user(),'system','display_friend_count');
+	$numfriends = get_pconfig(local_user(),'system','display_friend_count');
 	if($numfriends === false)
 		$numfriends = 24;
 	

@@ -6,8 +6,6 @@
 * Author: Thomas Willingham <https://beardyunixer.com/profile/beardyunixer>
 */
 
-use Friendica\Core\Config;
-
 function forumdirectory_install() {
 register_hook('app_menu', 'addon/forumdirectory/forumdirectory.php', 'forumdirectory_app_menu');
 }
@@ -51,7 +49,7 @@ function forumdirectory_post(&$a) {
 
 function forumdirectory_content(&$a) {
 
-	if((Config::get('system','block_public')) && (! local_user()) && (! remote_user())) {
+	if((get_config('system','block_public')) && (! local_user()) && (! remote_user())) {
 		notice( t('Public access denied.') . EOL);
 		return;
 	}
@@ -67,7 +65,7 @@ function forumdirectory_content(&$a) {
 	$tpl = get_markup_template('directory_header.tpl');
 
 	$globaldir = '';
-	$gdirpath = Config::get('system','directory');
+	$gdirpath = get_config('system','directory');
 	if(strlen($gdirpath)) {
 		$globaldir = '<ul><li><div id="global-directory-link"><a href="'
 		. zrl($gdirpath,true) . '">' . t('Global Directory') . '</a></div></li></ul>';
@@ -89,7 +87,7 @@ function forumdirectory_content(&$a) {
 		$search = dbesc($search);
 	$sql_extra = ((strlen($search)) ? " AND MATCH (`profile`.`name`, `user`.`nickname`, `pdesc`, `locality`,`region`,`country-name`,`gender`,`marital`,`sexual`,`about`,`romance`,`work`,`education`,`pub_keywords`,`prv_keywords` ) AGAINST ('$search' IN BOOLEAN MODE) " : "");
 
-	$publish = ((Config::get('system','publish_all')) ? '' : " AND `publish` = 1 " );
+	$publish = ((get_config('system','publish_all')) ? '' : " AND `publish` = 1 " );
 
 
 	$r = q("SELECT COUNT(*) AS `total` FROM `profile` LEFT JOIN `user` ON `user`.`uid` = `profile`.`uid` WHERE `is-default` = 1 $publish AND `user`.`blocked` = 0 AND `page-flags` = 2 $sql_extra ");

@@ -9,8 +9,6 @@
 require_once("mod/item.php");
 require_once("include/items.php");
 
-use Friendica\Core\PConfig;
-
 function ifttt_install() {
 	register_hook('connector_settings',     'addon/ifttt/ifttt.php', 'ifttt_settings');
 	register_hook('connector_settings_post','addon/ifttt/ifttt.php', 'ifttt_settings_post');
@@ -32,11 +30,11 @@ function ifttt_settings(&$a,&$s) {
         if(! local_user())
                 return;
 
-        $key = PConfig::get(local_user(),'ifttt','key');
+        $key = get_pconfig(local_user(),'ifttt','key');
 
 	if (!$key) {
 		$key = substr(random_string(),0,20);
-        	PConfig::set(local_user(),'ifttt','key', $key);
+        	set_pconfig(local_user(),'ifttt','key', $key);
 	}
 
 	$s .= '<span id="settings_ifttt_inflated" class="settings-block fakelink" style="display: block;" onclick="openClose(\'settings_ifttt_expanded\'); openClose(\'settings_ifttt_inflated\');">';
@@ -77,7 +75,7 @@ function ifttt_settings_post(&$a,&$b) {
 
         if(x($_POST,'ifttt-submit'))
                 if (isset($_POST['ifttt-rekey']))
-                        PConfig::delete(local_user(), 'ifttt', 'key');
+                        del_pconfig(local_user(), 'ifttt', 'key');
 }
 
 function ifttt_post(&$a) {
@@ -104,7 +102,7 @@ function ifttt_post(&$a) {
 	$key = $_REQUEST["key"];
 
 	// Check the key
-        if ($key != PConfig::get($uid,'ifttt','key')) {
+        if ($key != get_pconfig($uid,'ifttt','key')) {
 		logger("Invalid key for user ".$uid, LOGGER_DEBUG);
 		return;
 	}
